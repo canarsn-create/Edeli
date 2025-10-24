@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SohbetEdecekDeliBul.com</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { font-family: 'Poppins', sans-serif; }
+    .card-swipe { transition: transform 0.3s ease, opacity 0.3s ease; }
+    .swipe-left { transform: translateX(-150%) rotate(-30deg); opacity: 0; }
+    .swipe-right { transform: translateX(150%) rotate(30deg); opacity: 0; }
+</style>
+</head>
+<body class="bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 min-h-screen">
+<div id="app" class="min-h-screen flex items-center justify-center p-4"></div>
+
+<script>
+const deliTipleri = [
+  { tip: "Romantik Deli", emoji: "💕" }, { tip: "Felsefi Deli", emoji: "🤔" },
+  { tip: "Esprili Deli", emoji: "😂" }, { tip: "Sakin Deli", emoji: "😌" }
+];
+const takmaAdlar = ["DeliKralı","PsikozPrenses","ÇılgınKaplan","UçukKedi"];
+const hakkindaCumleleri = ["Gece 3'te tostla sohbet ederim","Hayat bir simulasyon ama ben deliyim"];
+const otomatikMesajlar = ["Ben de tostla konuşurum! 🍞","Senin deli tipin nedir? 🤪"];
+
+let sayfa = 'giris';
+let kullaniciAdi = '';
+let aktifProfil = null;
+let eslesmeler = [];
+let aktifSohbet = null;
+let mesajlar = [];
+
+function rastgeleProfil() {
+  const tip = deliTipleri[Math.floor(Math.random()*deliTipleri.length)];
+  const ad = takmaAdlar[Math.floor(Math.random()*takmaAdlar.length)];
+  const hakkinda = hakkindaCumleleri[Math.floor(Math.random()*hakkindaCumleleri.length)];
+  return { id: Date.now(), ad, ...tip, hakkinda, yas: 20 + Math.floor(Math.random()*30) };
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  if(sayfa === 'giris') {
+    const container = document.createElement('div');
+    container.className = "bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center";
+    container.innerHTML = `
+      <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">SohbetEdecekDeliBul.com</h1>
+      <p class="text-gray-600">🤪 Delilikle tanış, sohbetle eğlen! 💬</p>
+      <input id="username" placeholder="Örneğin ÇılgınKedi" class="w-full px-4 py-3 border-2 border-purple-300 rounded-xl my-4"/>
+      <button id="loginBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-xl">Deliliklere Katıl! 🚀</button>
+    `;
+    app.appendChild(container);
+    document.getElementById('loginBtn').onclick = ()=>{
+      kullaniciAdi = document.getElementById('username').value.trim();
+      if(kullaniciAdi) { 
+        sayfa = 'profiller';
+        aktifProfil = rastgeleProfil();
+        render();
+      }
+    }
+  }
+
+  else if(sayfa === 'profiller') {
+    const container = document.createElement('div');
+    container.className = "max-w-md w-full";
+    container.innerHTML = `
+      <div class="bg-white rounded-t-3xl p-4 shadow-lg flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-purple-600">Deli Profilleri</h2>
+        <div>
+          <button id="matchesBtn" class="bg-pink-500 text-white px-4 py-2 rounded-full">💬 Eşleşmeler (${eslesmeler.length})</button>
+          <button id="logoutBtn" class="bg-gray-500 text-white px-4 py-2 rounded-full">Çıkış</button>
+        </div>
+      </div>
+      <div class="relative mt-8 h-64 bg-white rounded-3xl shadow-2xl flex flex-col items-center justify-center">
+        <div class="text-9xl mb-4">${aktifProfil.emoji}</div>
+        <h3 class="text-2xl font-bold">${aktifProfil.ad}, ${aktifProfil.yas}</h3>
+        <p class="text-purple-600 font-semibold">${aktifProfil.tip}</p>
+        <p class="text-gray-600 italic">"${aktifProfil.hakkinda}"</p>
+      </div>
+      <div class="flex justify-center gap-8 mt-6">
+        <button id="dislikeBtn" class="bg-red-500 text-white rounded-full w-20 h-20 text-4xl">❌</button>
+        <button id="likeBtn" class="bg-green-500 text-white rounded-full w-20 h-20 text-4xl">❤️</button>
+      </div>
+    `;
+    app.appendChild(container);
+
+    document.getElementById('logoutBtn').onclick = ()=>{
+      sayfa='giris'; kullaniciAdi=''; eslesmeler=[]; render();
+    };
+    document.getElementById('matchesBtn').onclick = ()=>{
+      sayfa='eslesmeler'; render();
+    };
+    document.getElementById('likeBtn').onclick = ()=>{
+      if(Math.random()>0.3) eslesmeler.push(aktifProfil);
+      aktifProfil = rastgeleProfil(); render();
+    };
+    document.getElementById('dislikeBtn').onclick = ()=>{
+      aktifProfil = rastgeleProfil(); render();
+    };
+  }
+
+  else if(sayfa==='eslesmeler') {
+    const container = document.createElement('div');
+    container.className="max-w-md w-full";
+    container.innerHTML = `<h2 class="text-3xl font-bold text-purple-600 mb-4">Eşleşmelerim</h2>
+      <button id="backBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full mb-4">← Geri Dön</button>
+      <div>${eslesmeler.length? eslesmeler.map(p=>`<div class="bg-purple-100 p-4 rounded-xl my-2 cursor-pointer">${p.ad} - ${p.tip}</div>`).join('') : 'Henüz eşleşmen yok 😢'}</div>
+    `;
+    app.appendChild(container);
+    document.getElementById('backBtn').onclick=()=>{sayfa='profiller'; render();}
+  }
+}
+
+render();
+</script>
+</body>
+</html>
